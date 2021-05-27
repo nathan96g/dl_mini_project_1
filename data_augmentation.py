@@ -76,7 +76,14 @@ class Augmenter:
                           percentage_shift=0,
                           percentage_noise=0,
                           percentage_block=0
-                          ): 
+                          ):
+        """
+        This function return an noisy version of the input_data
+        given as argument. It returns input_data with the difference that
+        percentage_shift % of input_data is randomnly shifted,
+        percentage_noise % of input_data is noisy and
+        percentage_block % of input_data have a random block added to them
+        """
 
         split_input_data,split_input_classes = pre_processing.unzip_and_merge(input_data,input_classes)
 
@@ -122,6 +129,10 @@ class Augmenter:
             shift(percentage_shift % of input_data) + 
             noise(percentage_noise % of input_data) +
             block(percentage_block % of input_data)
+
+        The difference with the data_augmentation_full routine is that this one
+        does not replace train samples with noisy train samples. It add data
+        to the datasat.
         """
         shift_factor = 3
         shifted, shifted_classes = self.data_augmentation(input_data, 
