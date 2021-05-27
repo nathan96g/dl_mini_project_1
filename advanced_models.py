@@ -78,6 +78,7 @@ class ResNet(nn.Module):
         )
         self.avg = nn.AvgPool2d(kernel_size = img_size[0])
         self.fc = nn.Linear(nb_channels, nb_classes)
+        self.batch_normalization = True
 
     def forward(self, x):
         x = F.relu(self.bn(self.conv(x)))
@@ -115,7 +116,10 @@ class ResNeXtBlock(nn.Module):
         return y
 
 class ResNeXt(nn.Module):
-    def __init__(self, in_channels=1, img_size=(14,14), n_classes=10, filters=100, nb_blocks=10, width=4, cardinality=32):
+    def __init__(self, in_channels=1, n_classes=10, 
+                       filters=100, nb_blocks=10, 
+                       width=4, cardinality=32, 
+                       img_size=(14,14)):
         super(ResNeXt, self).__init__()
         # Convolution initial
         self.conv0 = nn.Conv2d(in_channels, filters, 3, padding=1)
@@ -128,6 +132,8 @@ class ResNeXt(nn.Module):
         self.conv1 = nn.Conv2d(filters, 1, 1, padding=0)
         self.bn1   = nn.BatchNorm2d(1)
         self.fc1   = nn.Linear(img_size[0]*img_size[1], n_classes)
+
+        self.batch_normalization = True
 
     def forward(self, x):
         # Convolution initial

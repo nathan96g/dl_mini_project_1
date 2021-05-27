@@ -29,44 +29,17 @@ learning_rate = 1e-1
 mini_batch_size = 200
 
 models = [
-          # Net_0(100, batch_normalization=False),
-          # Net_0(120, batch_normalization=True),
-          # Net_0(140, batch_normalization=True),
-          #m.Net_0(150, img_size, batch_normalization=True),
-          
-          #m.Net_0(150, img_size, batch_normalization=False),
-
-          # Net_1(70, batch_normalization=True),
-          # Net_1(80, batch_normalization=True),
-          
-          # m.Net_1(100, batch_normalization=False),
-          
-          # Net_1(120, batch_normalization=True),
-          # Net_1(140, batch_normalization=True),
-
-          # Net_2(80, batch_normalization=True),
-          m.Net_2(100, batch_normalization=False),
-          m.Net_2(100, batch_normalization=True),
-          # Net_2(110, batch_normalization=True),
-          # Net_2(120, batch_normalization=True),
-          # Net_2(130, batch_normalization=True),
-          # LeNet(3),
-          # LeNet(10),
-          # LeNet(15),
-          # LeNet(70),
-          # LeNet(80),
-          # LeNet(90),
-          # LeNet(100),
-          # LeNet(110),
-          # am.LeNet(120),
-          am.LeNet(130),
-          # LeNet(120),
-          # LeNet(130),
-          # LeNet(140),
-          # LeNet(150),
-          #am.ResNet(nb_residual_blocks = 5, nb_channels = 10, kernel_size = 3, nb_classes = 10),
-          #am.ResNeXt(filters=42, nb_blocks=3, width=2, cardinality=5)
-          ]
+            #m.Net_0(150, img_size, batch_normalization=False),
+            #m.Net_1(100, batch_normalization=False),
+            #m.Net_2(100, batch_normalization=False),
+            #am.LeNet(130),
+            am.ResNet(nb_residual_blocks = 5, 
+                      nb_channels = 10, 
+                      kernel_size = 3, 
+                      nb_classes = 10, 
+                      img_size=(14,14)),
+            #am.ResNeXt(filters=42, nb_blocks=3, width=2, cardinality=5, img_size=(14,14))
+        ]
           
 criterions = [nn.CrossEntropyLoss()]
 
@@ -79,8 +52,6 @@ results = [['Model', 'Batch Normalization', 'Loss', 'Accuracy: Max Pair', 'Accur
 
 for model in models:
   for criterion in criterions:
-    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # PyTorch v0.4.0
-    # model = Net_1(100).to(device)
 
     print("*****************************************************")
     print(model.__class__.__name__ +" with "+ criterion.__class__.__name__)
@@ -91,9 +62,7 @@ for model in models:
                     train_input, train_target, train_classes, 
                     test_input, test_target, test_classes, 
                     criterion, optimizer, 
-                    nb_epochs, mini_batch_size, verbal=False)
-  
-    # data_julien.append(data_julien_sol) 
+                    nb_epochs, mini_batch_size, verbal=True)
    
     acc_max = proc.accuracy_comparisons(model, test_input, test_target, mini_batch_size, rule="no_proba")
     acc_joint = proc.accuracy_comparisons(model, test_input, test_target, mini_batch_size, rule="joint_proba")
