@@ -59,7 +59,7 @@ class Augmenter:
         output_shift= torch.cat((output_shift, output_minibatch_shift), 0)
       return output_shift
 
-    def data_augmentation(self, split_input_data, split_input_classes, percentage_pert, func, arg):
+    def data_augmentation_(self, split_input_data, split_input_classes, percentage_pert, func, arg):
 
         if percentage_pert < 0.005 or percentage_pert > 1 : percentage = 0
 
@@ -81,15 +81,65 @@ class Augmenter:
         split_input_data,split_input_classes = pre_processing.unzip_and_merge(input_data,input_classes)
 
         shift_factor = 3
-        self.data_augmentation(split_input_data, split_input_classes, percentage_shift, self.shift, shift_factor)
+        self.data_augmentation_(split_input_data, split_input_classes, percentage_shift, self.shift, shift_factor)
 
         intensity_noise = 50
-        self.data_augmentation(split_input_data, split_input_classes, percentage_noise, self.noise, intensity_noise)
+        self.data_augmentation_(split_input_data, split_input_classes, percentage_noise, self.noise, intensity_noise)
 
         block_size = torch.randint(3, 5, (1,))
-        self.data_augmentation(split_input_data, split_input_classes, percentage_block, self.block, block_size)
+        self.data_augmentation_(split_input_data, split_input_classes, percentage_block, self.block, block_size)
 
         input_data = torch.reshape(split_input_data, [1000, 2, 14, 14])  
         input_classes = torch.reshape(split_input_classes, [1000, 2])
 
         return input_data,input_classes
+
+
+    def data_augmentation(self, split_input_data, split_input_classes, percentage_pert, func, arg):
+
+        percentage = 0 if percentage_pert < 0.005 or percentage_pert > 1 else percentage_pert
+
+        nbr_pert = round(self.data_size * percentage * 0.1) * 10
+        index_pert = torch.randperm(self.data_size - 1)[0 : nbr_pert]
+
+        if percentage != 0 :
+            return self.compute_by_batch(split_input_data[index_pert], func, arg), \
+                   split_input_classes[index_pert]
+
+        return split_input_data[index_pert], \
+               split_input_classes[index_pert]
+               
+
+    def __call__(self, input_data, input_classes,  
+                          percentage_shift=0.33,
+                          percentage_noise=0.33,
+                          percentage_block=0.33
+                          ):
+
+        split_input_data,split_input_classes = pre_processing.unzip_and_merge(input_data,input_classes)
+
+        shift_factor = 3
+        shifted, shifted_classes = self.data_augmentation(split_input_data, 
+                                                          split_input_classes, 
+                                                          percentage_shift, 
+                                                          self.shift, 
+                                                          shift_factor)
+
+        intensity_noise = 50
+        noise, noise_classes = self.data_augmentation(split_input_data, 
+                                                      split_input_classes, 
+                                                      percentage_noise, 
+                                                      self.noise, 
+                                                      intensity_noise)
+
+        block_size = torch.randint(3, 5, (1,))
+        block, block_classes = self.data_augmentation(split_input_data, 
+                                                      split_input_classes, 
+                                                      percentage_block, 
+                                                      self.block, 
+                                                      block_size)
+
+        tmp, tmp_classes = pre_processing.merge_dataset(shifted, shifted_classes, 
+                                                        noise, noise_classes)
+
+        return pre_processing.merge_dataset(tmp, tmp_classes, block, block_classes)

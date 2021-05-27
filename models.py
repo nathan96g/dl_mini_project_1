@@ -63,7 +63,7 @@ class Net_1(nn.Module):
 
 
 ################################################
-#      Conv + dense (many layers)              #
+#        Conv + dense (many layers)            #
 ################################################
 
 class Net_2(nn.Module):
