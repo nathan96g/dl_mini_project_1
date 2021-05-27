@@ -1,1 +1,1 @@
-# dl_mini_project_1
+# DL MINI-PROJECT: Classification, weight sharing, auxiliary losses
