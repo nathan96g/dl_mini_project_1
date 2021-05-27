@@ -2,6 +2,7 @@ import torch
 import pre_processing
 from torch import nn
 from torch.nn import functional as F
+import time
 
 
 def accuracy_numbers(model, input, classes, mini_batch_size):
@@ -84,6 +85,7 @@ def train_model_standard(model,
                          criterion, optimizer, nb_epochs, mini_batch_size,
                          CrossEntropy=True, verbal=True):
 
+    t0 = time.time()
 
     hot_train_classes = pre_processing.to_hot_encoding(train_classes)
     hot_test_classes = pre_processing.to_hot_encoding(test_classes)
@@ -114,7 +116,7 @@ def train_model_standard(model,
             result += add_result
             print(result)
     
-    if verbal : print("training model terminated.")  
+    if verbal : print("training model terminated. Runing time: {}s".format(time.time()-t0))  
     
     return model
 

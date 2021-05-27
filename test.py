@@ -24,7 +24,7 @@ max_pixel_val = 255 #pixels can take value from 0 to 255
 
 # Can be pass for the training, will augment the dataset size with
 # twisted images (shift, noise and block).
-# augmenter = data.Augmenter(img_size, max_pixel_val, data_size)
+#augmenter = data.Augmenter(img_size, max_pixel_val, data_size)
 augmenter = None
 
 hidden_units = 100
@@ -42,10 +42,10 @@ models = [
             #          kernel_size = 3, 
             #          nb_classes = 10, 
             #          img_size=(14,14)),
-            #am.ResNeXt(filters=42, nb_blocks=3, width=2, cardinality=5, img_size=(14,14))
+            #am.ResNeXt(filters=42, nb_blocks=3, width=2, cardinality=2, img_size=(14,14))
         ]
           
-criterions = [nn.CrossEntropyLoss()]
+criterions = [nn.MSELoss(), nn.CrossEntropyLoss()]
 
 results = [['Model', 'Batch Normalization', 'Loss', 'Accuracy: Max Pair', 'Accuracy: Joint Probability']]
 
@@ -61,7 +61,7 @@ for model in models:
                     train_input, train_target, train_classes, 
                     test_input, test_target, test_classes, 
                     criterion, optimizer, 
-                    nb_epochs, mini_batch_size, augmenter, verbal=False)
+                    nb_epochs, mini_batch_size, augmenter, verbal=True)
    
     acc_max = proc.accuracy_comparisons(model, test_input, test_target, mini_batch_size, rule="no_proba")
     acc_joint = proc.accuracy_comparisons(model, test_input, test_target, mini_batch_size, rule="joint_proba")

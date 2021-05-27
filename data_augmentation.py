@@ -9,38 +9,52 @@ class Augmenter:
         self.data_size = data_size
 
     def noise(self, input, intensity):
+        """
+        Simply add white noise to the image.
+        """
         res = input + torch.empty(self.img_size).normal_(0,intensity)
         return res.clamp_(0, self.max_pixel_val).to(int)
 
 
     def noise_mask(self, perc_pixel_changed):
+        """
+        Helper function used in noise custom
+        """
         mask = torch.empty(self.img_size).uniform_(0 -perc_pixel_changed, 1-perc_pixel_changed)
         mask = torch.where(mask < 0, torch.ones(self.img_size), torch.zeros(self.img_size))
         return mask
 
     def noise_custom(self, input, arg):
-      intensity = arg[0]
-      perc_pixel_changed = arg[1]
-      res = input + torch.empty(self.img_size).normal_(0,intensity) * self.noise_mask(perc_pixel_changed)
-      return res.clamp_(0, self.max_pixel_val).to(int)
+        """
+        An other way to implement noise on an image, that
+        we do not use
+        """
+        intensity = arg[0]
+        perc_pixel_changed = arg[1]
+        res = input + torch.empty(self.img_size).normal_(0,intensity) * self.noise_mask(perc_pixel_changed)
+        return res.clamp_(0, self.max_pixel_val).to(int)
 
 
-    ###### Function block ######
     def block(self, input, block_size):
-      coordinate_of_block = torch.randint(0, 6, (2, 1)) + 3
-      x_block = coordinate_of_block[1]
-      y_block = coordinate_of_block[0]
+        """
+        Add a block one the image.
+        """
+        coordinate_of_block = torch.randint(0, 6, (2, 1)) + 3
+        x_block = coordinate_of_block[1]
+        y_block = coordinate_of_block[0]
 
-      square_block = torch.ones(block_size, block_size) * -1
-      block_matrix = torch.ones(self.img_size) 
-      block_matrix[y_block:y_block+block_size, x_block:x_block+block_size] += square_block
+        square_block = torch.ones(block_size, block_size) * -1
+        block_matrix = torch.ones(self.img_size) 
+        block_matrix[y_block:y_block+block_size, x_block:x_block+block_size] += square_block
 
-      return input * block_matrix
+        return input * block_matrix
 
 
-    ###### Function shift ###### 
     def shift(self, input,shift_size):
-      #random coordinate of the x and y shift 
+      """
+      Randomly sample a x and y coordinates and shift
+      the image according to these coordinates.
+      """
       shift_coordinate = torch.randint(-shift_size, shift_size+1, (2, 1))
       x_shift = shift_coordinate[1]
       y_shift = shift_coordinate[0]
@@ -60,6 +74,9 @@ class Augmenter:
       return output_shift
 
     def data_augmentation_(self, split_input_data, split_input_classes, percentage_pert, func, arg):
+        """
+        Modify in place the split_input_data paramter with a function func
+        """
 
         if percentage_pert < 0.005 or percentage_pert > 1 : percentage = 0
 
@@ -103,6 +120,10 @@ class Augmenter:
 
 
     def data_augmentation(self, split_input_data, split_input_classes, percentage_pert, func, arg):
+        """
+        The difference with the function data_augmentation_ is that this one is
+        not done in-place, the resulting changment are returned.
+        """
 
         percentage = 0 if percentage_pert < 0.005 or percentage_pert > 1 else percentage_pert
 
@@ -134,30 +155,36 @@ class Augmenter:
         does not replace train samples with noisy train samples. It add data
         to the datasat.
         """
-        shift_factor = 3
-        shifted, shifted_classes = self.data_augmentation(input_data, 
+        ret = input_data
+        ret_classes = input_classes
+
+        if percentage_shift > 0.005:
+            shift_factor = 3
+            shifted, shifted_classes = self.data_augmentation(input_data, 
+                                                              input_classes, 
+                                                              percentage_shift, 
+                                                              self.shift, 
+                                                              shift_factor)
+            ret, ret_classes = pre_processing.merge_dataset(ret, ret_classes, 
+                                                            shifted, shifted_classes)
+        if percentage_noise > 0.005:
+            intensity_noise = 50
+            noise, noise_classes = self.data_augmentation(input_data, 
                                                           input_classes, 
-                                                          percentage_shift, 
-                                                          self.shift, 
-                                                          shift_factor)
-
-        intensity_noise = 50
-        noise, noise_classes = self.data_augmentation(input_data, 
-                                                      input_classes, 
-                                                      percentage_noise, 
-                                                      self.noise, 
-                                                      intensity_noise)
-
-        block_size = torch.randint(3, 5, (1,))
-        block, block_classes = self.data_augmentation(input_data, 
-                                                      input_classes, 
-                                                      percentage_block, 
-                                                      self.block, 
-                                                      block_size)
-
-        tmp, tmp_classes = pre_processing.merge_dataset(shifted, shifted_classes, 
-                                                        noise, noise_classes)
-        tmp, tmp_classes = pre_processing.merge_dataset(tmp, tmp_classes, 
-                                                        block, block_classes)
-
-        return pre_processing.merge_dataset(tmp, tmp_classes, input_data, input_classes)
+                                                          percentage_noise, 
+                                                          self.noise, 
+                                                          intensity_noise)
+            ret, ret_classes = pre_processing.merge_dataset(ret, ret_classes, 
+                                                            noise, noise_classes)
+        if percentage_block > 0.005:
+            block_size = torch.randint(3, 5, (1,))
+            block, block_classes = self.data_augmentation(input_data, 
+                                                          input_classes, 
+                                                          percentage_block, 
+                                                          self.block, 
+                                                          block_size)
+            ret, ret_classes = pre_processing.merge_dataset(ret, ret_classes, 
+                                                            block, block_classes)
+        # shuffle the dataset
+        shuffled_idxs = torch.randperm(ret_classes.size()[0])
+        return ret[shuffled_idxs], ret_classes[shuffled_idxs]
