@@ -108,38 +108,45 @@ class Augmenter:
 
         return split_input_data[index_pert], \
                split_input_classes[index_pert]
-               
+
 
     def __call__(self, input_data, input_classes,  
-                          percentage_shift=0.33,
-                          percentage_noise=0.33,
-                          percentage_block=0.33
+                          percentage_shift=0.2,
+                          percentage_noise=0.2,
+                          percentage_block=0.2
                           ):
-
-        split_input_data,split_input_classes = pre_processing.unzip_and_merge(input_data,input_classes)
-
+        """
+        This function return an augmented version of the input_data
+        given as argument. It returns:
+            input_data + 
+            shift(percentage_shift % of input_data) + 
+            noise(percentage_noise % of input_data) +
+            block(percentage_block % of input_data)
+        """
         shift_factor = 3
-        shifted, shifted_classes = self.data_augmentation(split_input_data, 
-                                                          split_input_classes, 
+        shifted, shifted_classes = self.data_augmentation(input_data, 
+                                                          input_classes, 
                                                           percentage_shift, 
                                                           self.shift, 
                                                           shift_factor)
 
         intensity_noise = 50
-        noise, noise_classes = self.data_augmentation(split_input_data, 
-                                                      split_input_classes, 
+        noise, noise_classes = self.data_augmentation(input_data, 
+                                                      input_classes, 
                                                       percentage_noise, 
                                                       self.noise, 
                                                       intensity_noise)
 
         block_size = torch.randint(3, 5, (1,))
-        block, block_classes = self.data_augmentation(split_input_data, 
-                                                      split_input_classes, 
+        block, block_classes = self.data_augmentation(input_data, 
+                                                      input_classes, 
                                                       percentage_block, 
                                                       self.block, 
                                                       block_size)
 
         tmp, tmp_classes = pre_processing.merge_dataset(shifted, shifted_classes, 
                                                         noise, noise_classes)
+        tmp, tmp_classes = pre_processing.merge_dataset(tmp, tmp_classes, 
+                                                        block, block_classes)
 
-        return pre_processing.merge_dataset(tmp, tmp_classes, block, block_classes)
+        return pre_processing.merge_dataset(tmp, tmp_classes, input_data, input_classes)

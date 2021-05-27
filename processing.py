@@ -122,12 +122,16 @@ def train_model(model,
                 train_input, train_target, train_classes, 
                 test_input, test_target, test_classes, 
                 criterion, optimizer, nb_epochs, 
-                mini_batch_size, verbal=True):
+                mini_batch_size, augmenter=None, verbal=True):
     """
     Train the given model with input and classes given as argument
     """  
     merge_train_input, merge_train_classes =  pre_processing.unzip_and_merge(train_input, train_classes)
     merge_test_input, merge_test_classes =  pre_processing.unzip_and_merge(test_input, test_classes)
+
+    # Augment data if possible
+    if augmenter != None:
+        merge_train_input, merge_train_classes = augmenter(merge_train_input, merge_train_classes)
 
     CrossEntropy = type(criterion) is nn.CrossEntropyLoss
     

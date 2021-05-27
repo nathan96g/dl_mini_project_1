@@ -13,13 +13,19 @@ torch.manual_seed(42)
 train_input, train_target, train_classes, test_input, test_target, test_classes = \
     prologue.generate_pair_sets(1000)
 
-print(train_input.size())
-print(train_classes.size())
+print("Befor pre processing:")
+print("Input size: ", train_input.size())
+print("targets size ", train_classes.size())
 
 img_size = (14, 14)
 img_vect_length = img_size[0] * img_size[1]
 data_size = train_input.size()[0] * train_input.size()[1] #1000 * 2 images
 max_pixel_val = 255 #pixels can take value from 0 to 255
+
+# Can be pass for the training, will augment the dataset size with
+# twisted images (shift, noise and block).
+# augmenter = data.Augmenter(img_size, max_pixel_val, data_size)
+augmenter = None
 
 hidden_units = 100
 nb_epochs = 51
@@ -39,14 +45,9 @@ models = [
             #am.ResNeXt(filters=42, nb_blocks=3, width=2, cardinality=5, img_size=(14,14))
         ]
           
-criterions = [nn.MSELoss(), nn.CrossEntropyLoss()]
+criterions = [nn.CrossEntropyLoss()]
 
 results = [['Model', 'Batch Normalization', 'Loss', 'Accuracy: Max Pair', 'Accuracy: Joint Probability']]
-
-
-#if data augmentation :
-#train_input,train_classes = data_augmentation_full(train_input, train_classes, percentage_shift=0, percentage_noise=0.5,percentage_block=0) 
-
 
 for model in models:
   for criterion in criterions:
@@ -60,7 +61,7 @@ for model in models:
                     train_input, train_target, train_classes, 
                     test_input, test_target, test_classes, 
                     criterion, optimizer, 
-                    nb_epochs, mini_batch_size, verbal=False)
+                    nb_epochs, mini_batch_size, augmenter, verbal=False)
    
     acc_max = proc.accuracy_comparisons(model, test_input, test_target, mini_batch_size, rule="no_proba")
     acc_joint = proc.accuracy_comparisons(model, test_input, test_target, mini_batch_size, rule="joint_proba")
