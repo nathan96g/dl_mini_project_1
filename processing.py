@@ -112,8 +112,7 @@ def train_model_standard(model,
             add_result, train_accuracy,test_accuracy= numbers_accuracy_to_string(model, train_input, hot_train_classes, test_input, hot_test_classes, mini_batch_size)
             train_accuracy
             result += add_result
-            if e % 20 == 0:
-                print(result)
+            print(result)
     
     if verbal : print("training model terminated.")  
     
@@ -124,7 +123,9 @@ def train_model(model,
                 test_input, test_target, test_classes, 
                 criterion, optimizer, nb_epochs, 
                 mini_batch_size, verbal=True):
-  
+    """
+    Train the given model with input and classes given as argument
+    """  
     merge_train_input, merge_train_classes =  pre_processing.unzip_and_merge(train_input, train_classes)
     merge_test_input, merge_test_classes =  pre_processing.unzip_and_merge(test_input, test_classes)
 

@@ -1,7 +1,7 @@
 import torch
 import pre_processing
 
-class DataAugmentation:
+class Augmenter:
 
     def __init__(self, img_size, max_pixel_val, data_size):
         self.img_size = img_size

@@ -1,5 +1,5 @@
-from data_augmentation import DataAugmentation
 from torch import nn
+import data_augmentation as data
 import models as m
 import advanced_models as am
 import torch
@@ -21,7 +21,7 @@ data_size = train_input.size()[0] * train_input.size()[1] #1000 * 2 images
 max_pixel_val = 255 #pixels can take value from 0 to 255
 
 # Augment train dataset
-augmenter = DataAugmentation(img_size, max_pixel_val, data_size)
+augmenter = data.Augmenter(img_size, max_pixel_val, data_size)
 
 hidden_units = 100
 nb_epochs = 51
@@ -29,15 +29,15 @@ learning_rate = 1e-1
 mini_batch_size = 200
 
 models = [
-            #m.Net_0(150, img_size, batch_normalization=False),
-            #m.Net_1(100, batch_normalization=False),
-            #m.Net_2(100, batch_normalization=False),
-            #am.LeNet(130),
-            am.ResNet(nb_residual_blocks = 5, 
-                      nb_channels = 10, 
-                      kernel_size = 3, 
-                      nb_classes = 10, 
-                      img_size=(14,14)),
+            m.Net_0(150, img_size, batch_normalization=False),
+            m.Net_1(100, batch_normalization=False),
+            m.Net_2(100, batch_normalization=False),
+            am.LeNet(130),
+            #am.ResNet(nb_residual_blocks = 5, 
+            #          nb_channels = 10, 
+            #          kernel_size = 3, 
+            #          nb_classes = 10, 
+            #          img_size=(14,14)),
             #am.ResNeXt(filters=42, nb_blocks=3, width=2, cardinality=5, img_size=(14,14))
         ]
           
