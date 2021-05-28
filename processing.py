@@ -93,7 +93,7 @@ def train_model_standard(model,
     train_input = train_input.unsqueeze(1)
     test_input = test_input.unsqueeze(1)
 
-    if verbal : print("training model ...")
+    if verbal : print("training model...")
 
     for e in range(nb_epochs):
         acc_loss = 0

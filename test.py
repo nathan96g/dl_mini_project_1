@@ -44,7 +44,7 @@ models = [
             #          img_size=(14,14)),
             #am.ResNeXt(filters=42, nb_blocks=3, width=2, cardinality=2, img_size=(14,14))
         ]
-          
+
 criterions = [nn.MSELoss(), nn.CrossEntropyLoss()]
 
 results = [['Model', 'Batch Normalization', 'Loss', 'Accuracy: Max Pair', 'Accuracy: Joint Probability']]
